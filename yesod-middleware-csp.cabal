@@ -1,0 +1,53 @@
+Name:                   yesod-middleware-csp
+Version:                0.0.0
+Author:                 Jezen Thomas <jezen@riskbook.com>
+Maintainer:             Jezen Thomas <jezen@riskbook.com>
+License:                MIT
+License-File:           LICENSE
+Cabal-Version:          >= 1.10
+Build-Type:             Simple
+Extra-Source-Files:     README.md, ChangeLog.md
+Category:               Web, Yesod
+Synopsis:               A middleware for building CSP headers on the fly
+
+Library
+  Default-Language:     Haskell2010
+  HS-Source-Dirs:       src
+  GHC-Options:          -Wall
+  Default-Extensions:   NoImplicitPrelude
+  Exposed-Modules:      Yesod.Middleware.CSP
+  Build-Depends:
+      base                  >= 4       && < 5
+    , http-client
+    , network-uri
+    , time
+    , ua-parser
+    , uuid
+    , yesod                 >= 1.6.0
+    , yesod-core            >= 1.6.15
+  Other-Modules:
+    Yesod.Middleware.CSP
+
+Test-Suite spec
+  Type:                 exitcode-stdio-1.0
+  Default-Language:     Haskell2010
+  Hs-Source-Dirs:       src
+                      , test
+  Ghc-Options:          -Wall
+  Default-Extensions:   NoImplicitPrelude
+  Main-Is:              Spec.hs
+  Build-Depends:
+      base
+    , classy-prelude        >= 0.10.2
+    , classy-prelude-yesod  >= 1.1
+    , fast-logger
+    , hspec
+    , monad-logger
+    , network-uri
+    , yesod
+    , yesod-core            >= 1.6.15  &&  < 1.7
+    , yesod-test
+  Other-Modules:
+    ExampleApp
+    TestImport
+    Yesod.Middleware.CSP

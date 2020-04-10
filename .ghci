@@ -1,0 +1,16 @@
+:set -i./src:./test
+:set -fobject-code
+:set -O0
+:set +s
+:set +t
+:set -freverse-errors
+:set -Wall
+:set -Wincomplete-uni-patterns
+:set -Wincomplete-record-updates
+:set -Widentities
+:set -Wredundant-constraints
+:set -Wcpp-undef
+:set -Werror=incomplete-patterns
+:set -XNoImplicitPrelude
+:def! test (\expr -> return $ ":!clear\n:l test/Spec.hs\n:main " ++ expr ++"\n")
+:def! hlint const . return $ ":! hlint ./src ./test"
