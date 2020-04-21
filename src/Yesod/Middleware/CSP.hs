@@ -67,6 +67,7 @@ instance Show Source where
 
 data Directive
   = DefaultSrc
+  | StyleSrc
   | ScriptSrc
   | ObjectSrc
   | ImgSrc
@@ -78,6 +79,7 @@ data Directive
 
 instance Show Directive where
   show DefaultSrc = "default-src"
+  show StyleSrc = "style-src"
   show ScriptSrc = "script-src"
   show ObjectSrc = "object-src"
   show ImgSrc = "img-src"
