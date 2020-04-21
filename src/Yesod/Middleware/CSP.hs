@@ -71,6 +71,7 @@ data Directive
   | ScriptSrc
   | ObjectSrc
   | ImgSrc
+  | FontSrc
   | FormAction
   | FrameAncestors
   | BaseURI
@@ -83,6 +84,7 @@ instance Show Directive where
   show ScriptSrc = "script-src"
   show ObjectSrc = "object-src"
   show ImgSrc = "img-src"
+  show FontSrc = "font-src"
   show FormAction = "form-action"
   show FrameAncestors = "frame-ancestors"
   show BaseURI = "base-uri"
