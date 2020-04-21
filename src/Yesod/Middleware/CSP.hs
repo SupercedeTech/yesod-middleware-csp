@@ -2,13 +2,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Yesod.Middleware.CSP
-  ( addCSP
-  , addCSPMiddleware
+  ( CSPNonce (..)
   , Directive (..)
   , Source (..)
+  , addCSP
+  , addCSPMiddleware
   , addScript
-  , addScriptRemote
   , addScriptEither
+  , addScriptRemote
   , getRequestNonce
   ) where
 

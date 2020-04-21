@@ -17,16 +17,19 @@ Library
   Default-Extensions:   NoImplicitPrelude
   Exposed-Modules:      Yesod.Middleware.CSP
   Build-Depends:
-      base                  >= 4       && < 5
+      base                  >= 4  && < 5
+    , base64-bytestring
+    , bytestring            >=0.9 && <0.11
+    , containers
     , http-client
+    , http-conduit          >=2.3 && <2.4
     , network-uri
+    , text
     , time
     , ua-parser
     , uuid
     , yesod                 >= 1.6.0
     , yesod-core            >= 1.6.15
-  Other-Modules:
-    Yesod.Middleware.CSP
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0
@@ -38,16 +41,28 @@ Test-Suite spec
   Main-Is:              Spec.hs
   Build-Depends:
       base
+    , base64-bytestring
+    , bytestring            >=0.9 && <0.11
+    , case-insensitive
     , classy-prelude        >= 0.10.2
     , classy-prelude-yesod  >= 1.1
+    , containers
     , fast-logger
     , hspec
+    , http-conduit          >=2.3 && <2.4
+    , http-types
     , monad-logger
     , network-uri
+    , text
+    , ua-parser
+    , uuid
+    , wai-extra               >=3.0     && <3.1
     , yesod
     , yesod-core            >= 1.6.15  &&  < 1.7
+    , yesod-static          >=1.6      && <1.7
     , yesod-test
   Other-Modules:
     ExampleApp
     TestImport
     Yesod.Middleware.CSP
+    Yesod.Middleware.CSPSpec
