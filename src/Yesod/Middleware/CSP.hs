@@ -66,7 +66,8 @@ instance Show Source where
   show (Nonce n) = "'nonce-" <> unpack n <> "'"
 
 data Directive
-  = ScriptSrc
+  = DefaultSrc
+  | ScriptSrc
   | ObjectSrc
   | ImgSrc
   | FormAction
@@ -76,6 +77,7 @@ data Directive
   deriving (Eq, Ord)
 
 instance Show Directive where
+  show DefaultSrc = "default-src"
   show ScriptSrc = "script-src"
   show ObjectSrc = "object-src"
   show ImgSrc = "img-src"
