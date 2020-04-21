@@ -70,6 +70,7 @@ data Directive
   | ImgSrc
   | FontSrc
   | ConnectSrc
+  | MediaSrc
   | FormAction
   | FrameAncestors
   | BaseURI
@@ -84,6 +85,7 @@ instance Show Directive where
   show ImgSrc = "img-src"
   show FontSrc = "font-src"
   show ConnectSrc = "connect-src"
+  show MediaSrc = "media-src"
   show FormAction = "form-action"
   show FrameAncestors = "frame-ancestors"
   show BaseURI = "base-uri"
