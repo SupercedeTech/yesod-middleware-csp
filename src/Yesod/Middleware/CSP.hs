@@ -17,16 +17,10 @@ import qualified Data.ByteString.Base64 as B64
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
-import Data.ByteString (ByteString)
-import Data.Map.Strict (Map)
-import Data.Maybe (fromMaybe)
-import Data.Set (Set)
-import Data.Text (Text, intercalate, pack, unpack)
-import Data.Text.Encoding (decodeUtf8)
+import ClassyPrelude
 import Data.UUID (toASCIIBytes)
 import Data.UUID.V4 (nextRandom)
 import Network.HTTP.Client.Conduit (host, parseRequest_, secure)
-import Prelude
 import Web.UAParser (parseUA, uarFamily)
 import Yesod.Core hiding (addScript, addScriptEither, addScriptRemote)
 
@@ -51,6 +45,9 @@ data Source
   | StrictDynamic
   | Nonce Text
   deriving (Eq, Ord)
+
+instance IsString Source where
+  fromString = Host . pack
 
 instance Show Source where
   show Wildcard = "*"
@@ -89,9 +86,6 @@ instance Show Directive where
   show FrameAncestors = "frame-ancestors"
   show BaseURI = "base-uri"
   show ReportURI = "report-uri"
-
-tshow :: Show a => a -> Text
-tshow = pack . show
 
 cachedDirectives :: MonadHandler m => m DirSet
 cachedDirectives = fromMaybe M.empty <$> cacheGet
