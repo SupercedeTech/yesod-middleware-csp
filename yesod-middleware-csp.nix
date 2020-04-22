@@ -1,17 +1,24 @@
-{ mkDerivation, base, classy-prelude, classy-prelude-yesod
-, fast-logger, hspec, http-client, monad-logger, network-uri
-, stdenv, time, ua-parser, uuid, yesod, yesod-core, yesod-test
+{ mkDerivation, base, base64-bytestring, bytestring
+, case-insensitive, classy-prelude, classy-prelude-yesod
+, containers, fast-logger, hspec, http-client, http-conduit
+, http-types, monad-logger, network-uri, stdenv, text, time
+, ua-parser, uuid, wai-extra, yesod, yesod-core, yesod-static
+, yesod-test
 }:
 mkDerivation {
   pname = "yesod-middleware-csp";
   version = "0.0.0";
   src = ./.;
   libraryHaskellDepends = [
-    base http-client network-uri time ua-parser uuid yesod yesod-core
+    base base64-bytestring bytestring classy-prelude containers
+    http-client http-conduit network-uri text time ua-parser uuid yesod
+    yesod-core
   ];
   testHaskellDepends = [
-    base classy-prelude classy-prelude-yesod fast-logger hspec
-    monad-logger network-uri yesod yesod-core yesod-test
+    base base64-bytestring bytestring case-insensitive classy-prelude
+    classy-prelude-yesod containers fast-logger hspec http-conduit
+    http-types monad-logger network-uri text ua-parser uuid wai-extra
+    yesod yesod-core yesod-static yesod-test
   ];
   description = "A middleware for building CSP headers on the fly";
   license = stdenv.lib.licenses.mit;
