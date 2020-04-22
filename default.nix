@@ -9,9 +9,6 @@ in
     (pkgs.haskell.packages.${compiler}.callPackage ./yesod-middleware-csp.nix {}) (drv: {
       src = gitignoreSource ./.;
       configureFlags = ["-f-library-only"];
-      doCheck = false;
-      testHaskellDepends = [];
-      testToolDepends = [];
       doHaddock = false;
       enableLibraryProfiling = false;
       enableSeparateDataOutput = false;
