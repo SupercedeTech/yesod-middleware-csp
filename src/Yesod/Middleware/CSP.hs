@@ -20,17 +20,11 @@ import qualified Data.Set as S
 import ClassyPrelude
 import Data.UUID (toASCIIBytes)
 import Data.UUID.V4 (nextRandom)
-import Network.HTTP.Client.Conduit (host, parseRequest_, secure)
-import Web.UAParser (parseUA, uarFamily)
 import Yesod.Core hiding (addScript, addScriptEither, addScriptRemote)
 
 type DirSet = Map Directive (Set Source)
 
 newtype CSPNonce = CSPNonce { unCSPNonce :: Text } deriving (Eq, Ord)
-
-newtype CSPHost = CSPHost { unCSPHost :: Text } deriving (Eq, Ord)
-
-data CSPVersion = CSP2 | CSP3 deriving (Eq)
 
 data Source
   = Wildcard
@@ -96,9 +90,6 @@ instance Show Directive where
 cachedDirectives :: MonadHandler m => m DirSet
 cachedDirectives = fromMaybe M.empty <$> cacheGet
 
-cachedHosts :: MonadHandler m => m (Set CSPHost)
-cachedHosts = fromMaybe S.empty <$> cacheGet
-
 -- | Add a directive to the current Content-Security Policy
 addCSP :: MonadWidget m => Directive -> Source -> m ()
 addCSP d s = cachedDirectives
@@ -119,33 +110,20 @@ showDirective (d, s) = tshow d <> " " <> showSources s
 showDirectives :: DirSet -> Text
 showDirectives = intercalate "; " . map showDirective . M.toList
 
-cspHeaderName :: CSPVersion -> Text
-cspHeaderName CSP2 = "X-Webkit-CSP"
-cspHeaderName CSP3 = "Content-Security-Policy"
+cspHeaderName :: Text
+cspHeaderName = "Content-Security-Policy"
 
-determineCSPVersion :: Maybe ByteString -> CSPVersion
-determineCSPVersion mUA = case mUA >>= fmap uarFamily . parseUA of
-  Just "Mobile Safari" -> CSP2
-  Just "Safari"        -> CSP2
-  _                    -> CSP3
-
-augmentCSP2 :: Set CSPHost -> DirSet -> DirSet
-augmentCSP2 h d =
-  let srcs = S.map (Host . unCSPHost) h
-   in if S.null h then d else M.insertWith insertSource ScriptSrc srcs d
-
-augmentCSP3 :: Maybe CSPNonce -> DirSet -> DirSet
-augmentCSP3 Nothing d = d
-augmentCSP3 (Just (CSPNonce n)) d =
+augment :: Maybe CSPNonce -> DirSet -> DirSet
+augment Nothing d = d
+augment (Just (CSPNonce n)) d =
   let srcs = S.fromList [ Nonce n, StrictDynamic ]
    in M.insertWith insertSource ScriptSrc srcs d
 
 addCSPMiddleware :: (HandlerFor m) a -> (HandlerFor m) a
 addCSPMiddleware handler = do
-  (r, n, h) <- (,,) <$> handler <*> cacheGet <*> cachedHosts
-  v <- determineCSPVersion <$> lookupHeader "User-Agent"
-  d <- (if v == CSP2 then augmentCSP2 h else augmentCSP3 n) <$> cachedDirectives
-  addHeader (cspHeaderName v) (showDirectives d)
+  (r, n) <- (,) <$> handler <*> cacheGet
+  d <- augment n <$> cachedDirectives
+  addHeader cspHeaderName (showDirectives d)
   pure r
 
 -- | Get a nonce for the request
@@ -183,11 +161,6 @@ addScript route = do
 addScriptRemote :: MonadWidget m => Text -> m ()
 addScriptRemote uri = do
   nonce <- getRequestNonce
-  hosts <- fromMaybe S.empty <$> cacheGet
-  let r = parseRequest_ $ unpack uri
-      h = decodeUtf8 . host $ r
-      p = if secure r then "https://" else "http://"
-  cacheSet $ S.insert (CSPHost (p <> h)) hosts
   addScriptRemoteAttrs uri [("nonce", unCSPNonce nonce)]
 
 addScriptEither :: MonadWidget m => Either (Route (HandlerSite m)) Text -> m ()

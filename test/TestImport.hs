@@ -26,26 +26,6 @@ withApp = before $ do
   logF <- F.newStdoutLoggerSet 1 >>= C.makeYesodLogger
   pure (ExampleApp logF eStatic, Yesod.defaultMiddlewaresNoLogging)
 
-safariUA :: ByteString
-safariUA = encodeUtf8 . pack . unwords $
-  [ "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8)"
-  , "AppleWebKit/534.59.10 (KHTML, like Gecko) Version/5.1.9"
-  , "Safari/534.59.10"
-  ]
-
-mobileSafariUA :: ByteString
-mobileSafariUA = encodeUtf8 . pack . unwords $
-  [ "Mozilla/5.0 (iPhone; CPU iPhone OS 13_1_2 like Mac OS X)"
-  , "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1"
-  , "Mobile/15E148 Safari/604.1"
-  ]
-
-useSafari :: RequestBuilder site ()
-useSafari = addRequestHeader (hUserAgent, safariUA)
-
-useMobileSafari :: RequestBuilder site ()
-useMobileSafari = addRequestHeader (hUserAgent, mobileSafariUA)
-
 assertCSP :: HasCallStack => ByteString -> YesodExample site ()
 assertCSP = assertHeader "Content-Security-Policy"
 
