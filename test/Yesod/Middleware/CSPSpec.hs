@@ -33,7 +33,7 @@ spec = withApp $ do
       get Example5
       h <- getNonceFromCSP
       a <- getAttrFromResponseMatch "script" "nonce"
-      assertCSP $ "script-src 'strict-dynamic' 'nonce-" <> fromJust h <> "'"
+      assertCSP $ "script-src 'nonce-" <> fromJust h <> "'"
       assertEq "match" h (encodeUtf8 <$> a)
 
   describe "when the user includes a remote JavaScript asset" $
@@ -42,7 +42,7 @@ spec = withApp $ do
       get Example6
       h <- getNonceFromCSP
       a <- getAttrFromResponseMatch "script" "nonce"
-      assertCSP $ "script-src 'strict-dynamic' 'nonce-" <> fromJust h <> "'"
+      assertCSP $ "script-src 'nonce-" <> fromJust h <> "'"
       assertEq "match" h (encodeUtf8 <$> a)
 
   describe "when no CSP directives are added" $

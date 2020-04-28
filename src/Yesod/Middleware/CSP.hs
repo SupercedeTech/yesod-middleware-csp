@@ -115,7 +115,7 @@ cspHeaderName = "Content-Security-Policy"
 augment :: Maybe CSPNonce -> DirSet -> DirSet
 augment Nothing d = d
 augment (Just (CSPNonce n)) d =
-  let srcs = S.fromList [ Nonce n, StrictDynamic ]
+  let srcs = S.fromList [ Nonce n ]
       existingScriptSrcs = S.toList (fromMaybe S.empty (lookup ScriptSrc d))
    in if any (`elem` existingScriptSrcs) [ None ]
       then d
