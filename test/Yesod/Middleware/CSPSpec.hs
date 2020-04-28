@@ -55,4 +55,4 @@ spec = withApp $ do
 
     it "they are overwritten by exclusive directives" $ do
       get Example8
-      assertCSP "script-src *"
+      assertCSP "script-src 'none'"

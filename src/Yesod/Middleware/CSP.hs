@@ -97,9 +97,8 @@ addCSP d s = cachedDirectives
 
 insertSource :: Set Source -> Set Source -> Set Source
 insertSource a b = case S.toList a of
-  [ Wildcard ] -> a
   [ None ]     -> a
-  _            -> a <> S.filter (`notElem` [Wildcard, None]) b
+  _            -> a <> S.filter (`notElem` [None]) b
 
 showSources :: Set Source -> Text
 showSources = pack . unwords . map show . S.toList
@@ -118,7 +117,7 @@ augment Nothing d = d
 augment (Just (CSPNonce n)) d =
   let srcs = S.fromList [ Nonce n, StrictDynamic ]
       existingScriptSrcs = S.toList (fromMaybe S.empty (lookup ScriptSrc d))
-   in if any (`elem` existingScriptSrcs) [ None, Wildcard ]
+   in if any (`elem` existingScriptSrcs) [ None ]
       then d
       else M.insertWith insertSource ScriptSrc srcs d
 

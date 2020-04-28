@@ -77,7 +77,7 @@ getExample7 = defaultLayout $ toWidget $ asText ""
 getExample8 :: Handler Html
 getExample8 = defaultLayout $ do
   addScript $ StaticR js_test_js
-  addCSP ScriptSrc Wildcard
+  addCSP ScriptSrc None
   toWidget $ asText ""
 
 instance Yesod ExampleApp where

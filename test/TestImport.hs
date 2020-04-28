@@ -15,7 +15,6 @@ import ClassyPrelude as X hiding (Handler, delete, deleteBy)
 import Control.Monad (when)
 import Data.CaseInsensitive (CI)
 import ExampleApp as X
-import Network.HTTP.Types.Header
 import Network.Wai.Test (SResponse(..))
 import Test.Hspec as X
 import Yesod.Test as X
