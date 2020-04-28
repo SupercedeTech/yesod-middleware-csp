@@ -30,6 +30,8 @@ mkYesod "ExampleApp" [parseRoutes|
 /4 Example4 GET
 /5 Example5 GET
 /6 Example6 GET
+/7 Example7 GET
+/8 Example8 GET
 |]
 
 getExample1 :: Handler Html
@@ -67,6 +69,15 @@ getExample5 = defaultLayout $ do
 getExample6 :: Handler Html
 getExample6 = defaultLayout $ do
   addScriptRemote "https://example.com/test.js"
+  toWidget $ asText ""
+
+getExample7 :: Handler Html
+getExample7 = defaultLayout $ toWidget $ asText ""
+
+getExample8 :: Handler Html
+getExample8 = defaultLayout $ do
+  addScript $ StaticR js_test_js
+  addCSP ScriptSrc Wildcard
   toWidget $ asText ""
 
 instance Yesod ExampleApp where

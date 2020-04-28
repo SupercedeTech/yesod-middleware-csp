@@ -44,3 +44,15 @@ spec = withApp $ do
       a <- getAttrFromResponseMatch "script" "nonce"
       assertCSP $ "script-src 'strict-dynamic' 'nonce-" <> fromJust h <> "'"
       assertEq "match" h (encodeUtf8 <$> a)
+
+  describe "when no CSP directives are added" $
+
+    it "does not add a CSP header" $ do
+      get Example7
+      assertNoHeader "Content-Security-Policy"
+
+  describe "when non-exclusive directives have been set" $
+
+    it "they are overwritten by exclusive directives" $ do
+      get Example8
+      assertCSP "script-src *"

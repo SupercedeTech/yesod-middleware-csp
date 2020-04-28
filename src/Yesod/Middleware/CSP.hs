@@ -117,13 +117,17 @@ augment :: Maybe CSPNonce -> DirSet -> DirSet
 augment Nothing d = d
 augment (Just (CSPNonce n)) d =
   let srcs = S.fromList [ Nonce n, StrictDynamic ]
-   in M.insertWith insertSource ScriptSrc srcs d
+      existingScriptSrcs = S.toList (fromMaybe S.empty (lookup ScriptSrc d))
+   in if any (`elem` existingScriptSrcs) [ None, Wildcard ]
+      then d
+      else M.insertWith insertSource ScriptSrc srcs d
 
 addCSPMiddleware :: (HandlerFor m) a -> (HandlerFor m) a
 addCSPMiddleware handler = do
   (r, n) <- (,) <$> handler <*> cacheGet
   d <- augment n <$> cachedDirectives
-  addHeader cspHeaderName (showDirectives d)
+  when (not (null (showDirectives d))) $
+    addHeader cspHeaderName (showDirectives d)
   pure r
 
 -- | Get a nonce for the request
