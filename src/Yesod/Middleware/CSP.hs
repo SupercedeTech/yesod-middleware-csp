@@ -31,6 +31,7 @@ data Source
   | None
   | Self
   | DataScheme
+  | BlobScheme
   | Host Text
   | Https
   | Http
@@ -48,6 +49,7 @@ instance Show Source where
   show None = "'none'"
   show Self = "'self'"
   show DataScheme = "data:"
+  show BlobScheme = "blob:"
   show (Host h) = unpack h
   show Https = "https:"
   show Http = "http:"
