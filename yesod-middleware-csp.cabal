@@ -21,14 +21,19 @@ Library
     , base64-bytestring
     , bytestring            >=0.9 && <0.11
     , classy-prelude        >=0.10.2
+    , conduit
     , containers
+    , directory
+    , filepath
     , http-client
     , network-uri
+    , template-haskell
     , text
     , time
     , uuid
     , yesod                 >= 1.6.0
     , yesod-core            >= 1.6.15
+    , yesod-static          >= 1.6     && <1.7
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0
@@ -45,12 +50,16 @@ Test-Suite spec
     , case-insensitive
     , classy-prelude        >=0.10.2
     , classy-prelude-yesod  >= 1.1
+    , conduit
     , containers
+    , directory
     , fast-logger
+    , filepath
     , hspec
     , http-types
     , monad-logger
     , network-uri
+    , template-haskell
     , text
     , uuid
     , wai-extra             >=3.0     && <3.1
