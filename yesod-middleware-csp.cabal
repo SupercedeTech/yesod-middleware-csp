@@ -23,6 +23,7 @@ Library
     , classy-prelude        >=0.10.2
     , conduit
     , containers
+    , data-default
     , directory
     , filepath
     , http-client
@@ -52,6 +53,7 @@ Test-Suite spec
     , classy-prelude-yesod  >= 1.1
     , conduit
     , containers
+    , data-default
     , directory
     , fast-logger
     , filepath

@@ -24,6 +24,7 @@ import ClassyPrelude
 import Conduit hiding (Source)
 import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Lazy as L
+import Data.Default
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -203,6 +204,32 @@ data CombineSettings = CombineSettings
   , csCombinedFolder :: FilePath
   -- ^ Subfolder to put combined files into.
   }
+
+instance Default CombineSettings where
+  def = CombineSettings
+      { csStaticDir = "static"
+      {- Disabled due to: https://github.com/yesodweb/yesod/issues/623
+      , csCssPostProcess = \fps ->
+            either (error . (errorIntro fps)) (return . TLE.encodeUtf8)
+          . flip luciusRTMinified []
+          . TLE.decodeUtf8
+      -}
+      , csCssPostProcess = const return
+      , csJsPostProcess = const return
+         -- FIXME The following borders on a hack. With combining of files,
+         -- the final location of the CSS is no longer fixed, so relative
+         -- references will break. Instead, we switched to using /static/
+         -- absolute references. However, when served from a separate domain
+         -- name, this will break too. The solution is that, during
+         -- development, we keep /static/, and in the combining phase, we
+         -- replace /static with a relative reference to the parent folder.
+      , csCssPreProcess =
+            return
+          . TL.replace "'/static/" "'../"
+          . TL.replace "\"/static/" "\"../"
+      , csJsPreProcess = return
+      , csCombinedFolder = "combined"
+      }
 
 data CombineType = JS | CSS
 
