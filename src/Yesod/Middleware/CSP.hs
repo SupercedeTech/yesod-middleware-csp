@@ -1,8 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Yesod.Middleware.CSP
-  ( CSPNonce (..)
+  ( CombineSettings (..)
+  , CSPNonce (..)
   , Directive (..)
   , Source (..)
   , addCSP
@@ -10,17 +15,30 @@ module Yesod.Middleware.CSP
   , addScript
   , addScriptEither
   , addScriptRemote
+  , combineScripts'
+  , combineStylesheets'
   , getRequestNonce
   ) where
 
+import ClassyPrelude
+import Conduit hiding (Source)
 import qualified Data.ByteString.Base64 as B64
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-
-import ClassyPrelude
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
 import Data.UUID (toASCIIBytes)
 import Data.UUID.V4 (nextRandom)
+import Language.Haskell.TH
+import Language.Haskell.TH.Syntax as TH
+import System.Directory
+import System.FilePath (takeDirectory)
+import qualified System.FilePath as F
 import Yesod.Core hiding (addScript, addScriptEither, addScriptRemote)
+import Yesod.Static hiding
+       (CombineSettings, combineScripts', combineStylesheets')
 
 type DirSet = Map Directive (Set Source)
 
@@ -170,3 +188,91 @@ addScriptRemote uri = do
 
 addScriptEither :: MonadWidget m => Either (Route (HandlerSite m)) Text -> m ()
 addScriptEither = either addScript addScriptRemote
+
+data CombineSettings = CombineSettings
+  { csStaticDir :: FilePath
+  -- ^ File path containing static files.
+  , csCssPostProcess :: [FilePath] -> L.ByteString -> IO L.ByteString
+  -- ^ Post processing to be performed on CSS files.
+  , csJsPostProcess :: [FilePath] -> L.ByteString -> IO L.ByteString
+  -- ^ Post processing to be performed on Javascript files.
+  , csCssPreProcess :: TL.Text -> IO TL.Text
+  -- ^ Pre-processing to be performed on CSS files.
+  , csJsPreProcess :: TL.Text -> IO TL.Text
+  -- ^ Pre-processing to be performed on Javascript files.
+  , csCombinedFolder :: FilePath
+  -- ^ Subfolder to put combined files into.
+  }
+
+data CombineType = JS | CSS
+
+combineStatics' :: CombineType
+                -> CombineSettings
+                -> [Route Static] -- ^ files to combine
+                -> Q Exp
+combineStatics' combineType CombineSettings {..} routes = do
+    texts <- qRunIO $ runConduitRes
+                    $ yieldMany fps
+                   .| awaitForever readUTFFile
+                   .| sinkLazy
+    ltext <- qRunIO $ preProcess texts
+    bs    <- qRunIO $ postProcess fps $ TLE.encodeUtf8 ltext
+    let hash' = base64md5 bs
+        suffix = csCombinedFolder </> hash' <.> extension
+        fp = csStaticDir </> suffix
+    qRunIO $ do
+        createDirectoryIfMissing True $ takeDirectory fp
+        L.writeFile fp bs
+    let pieces = map T.unpack $ T.splitOn "/" $ T.pack suffix
+    [|StaticRoute (map pack pieces) []|]
+  where
+    fps :: [FilePath]
+    fps = map toFP routes
+    toFP (StaticRoute pieces _) = csStaticDir </> F.joinPath (map T.unpack pieces)
+    readUTFFile fp = sourceFile fp .| decodeUtf8C
+    postProcess =
+        case combineType of
+            JS -> csJsPostProcess
+            CSS -> csCssPostProcess
+    preProcess =
+        case combineType of
+            JS -> csJsPreProcess
+            CSS -> csCssPreProcess
+    extension =
+        case combineType of
+            JS -> "js"
+            CSS -> "css"
+
+liftRoutes :: [Route Static] -> Q Exp
+liftRoutes =
+    fmap ListE . mapM go
+  where
+    go :: Route Static -> Q Exp
+    go (StaticRoute x y) = [|StaticRoute $(liftTexts x) $(liftPairs y)|]
+
+    liftTexts = fmap ListE . mapM liftT
+    liftT t = [|pack $(TH.lift $ unpack t)|]
+
+    liftPairs = fmap ListE . mapM liftPair
+    liftPair (x, y) = [|($(liftT x), $(liftT y))|]
+
+-- | Combine multiple CSS files together
+combineStylesheets' :: Bool -- ^ development? if so, perform no combining
+                    -> CombineSettings
+                    -> Name -- ^ Static route constructor name, e.g. \'StaticR
+                    -> [Route Static] -- ^ files to combine
+                    -> Q Exp
+combineStylesheets' development cs con routes
+    | development = [| mapM_ (addStylesheet . $(return $ ConE con)) $(liftRoutes routes) |]
+    | otherwise = [| addStylesheet $ $(return $ ConE con) $(combineStatics' CSS cs routes) |]
+
+
+-- | Combine multiple JS files together
+combineScripts' :: Bool -- ^ development? if so, perform no combining
+                -> CombineSettings
+                -> Name -- ^ Static route constructor name, e.g. \'StaticR
+                -> [Route Static] -- ^ files to combine
+                -> Q Exp
+combineScripts' development cs con routes
+    | development = [| mapM_ (addScript . $(return $ ConE con)) $(liftRoutes routes) |]
+    | otherwise = [| addScript $ $(return $ ConE con) $(combineStatics' JS cs routes) |]
