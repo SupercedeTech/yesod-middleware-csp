@@ -62,7 +62,7 @@ Test-Suite spec
     , template-haskell
     , text
     , uuid
-    , wai-extra             >=3.0     && <3.1
+    , wai-extra             >=3.0
     , yesod
     , yesod-core            >= 1.6.15  &&  < 1.7
     , yesod-static          >=1.6      && <1.7
