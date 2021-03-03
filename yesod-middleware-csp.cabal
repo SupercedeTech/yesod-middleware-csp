@@ -6,7 +6,7 @@ License:                MIT
 License-File:           LICENSE
 Cabal-Version:          >= 1.10
 Build-Type:             Simple
-Extra-Source-Files:     README.md, ChangeLog.md
+Extra-Source-Files:     README.md
 Category:               Web, Yesod
 Synopsis:               A middleware for building CSP headers on the fly
 
