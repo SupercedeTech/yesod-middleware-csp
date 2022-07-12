@@ -1,5 +1,7 @@
 # yesod-middleware-csp
 
+A middleware for building CSP headers on the fly
+
 Deals with CSP without disabling it.
 This is done by overriding the default yesod
 provided addScript functionalities and adding

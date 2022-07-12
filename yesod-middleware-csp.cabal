@@ -1,11 +1,15 @@
+Cabal-Version:          >= 1.10
 Name:                   yesod-middleware-csp
 Version:                1.0.0
 Author:                 Jezen Thomas <jezen@riskbook.com>
 Maintainer:             Jezen Thomas <jezen@riskbook.com>
 License:                MIT
 License-File:           LICENSE
-Cabal-Version:          >= 1.10
 Build-Type:             Simple
+Description:            Deals with CSP without disabling it.
+                        This is done by overriding the default yesod
+                        provided addScript functionalities and adding
+                        a nonce to the tag, and the right headers to the request.
 Extra-Source-Files:     README.md
 Category:               Web, Yesod
 Synopsis:               A middleware for building CSP headers on the fly
