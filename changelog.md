@@ -4,6 +4,10 @@ This format is based on [Keep A Changelog](https://keepachangelog.com/en/1.0.0).
 
 ## Unreleased
 
+## 1.0.1 - 2022-07-12
+
++ Add missing extra source files to cabal file
+
 ## 1.0.0 - 2022-07-12
 
 + Add Attrs variants of add script.
