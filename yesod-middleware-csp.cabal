@@ -1,6 +1,6 @@
 Cabal-Version:          >= 1.10
 Name:                   yesod-middleware-csp
-Version:                1.0.1
+Version:                1.0.2
 Author:                 Jezen Thomas <jezen@riskbook.com>
 Maintainer:             Jezen Thomas <jezen@riskbook.com>
 License:                MIT

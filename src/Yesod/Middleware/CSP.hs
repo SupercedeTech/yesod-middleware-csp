@@ -17,8 +17,10 @@ module Yesod.Middleware.CSP
   , addCSP
   , addCSPMiddleware
   , addScript
+  , addScriptAttrs
   , addScriptEither
   , addScriptRemote
+  , addScriptRemoteAttrs
   , combineScripts'
   , combineStylesheets'
   , getRequestNonce
