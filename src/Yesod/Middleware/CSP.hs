@@ -5,6 +5,10 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
+-- | Deals with CSP without disabling it.
+--   This is done by overriding the default yesod
+--   provided addScript functionalities and adding
+--   a nonce to the tag, and the right headers to the request.
 module Yesod.Middleware.CSP
   ( CombineSettings (..)
   , CSPNonce (..)
@@ -36,7 +40,8 @@ import Language.Haskell.TH.Syntax as TH
 import System.Directory
 import System.FilePath (takeDirectory)
 import qualified System.FilePath as F
-import Yesod.Core hiding (addScript, addScriptEither, addScriptRemote)
+import Yesod.Core(HandlerSite, MonadWidget, MonadHandler, HandlerFor)
+import qualified Yesod.Core as Core
 import Yesod.Static hiding
        (CombineSettings, combineScripts', combineStylesheets')
 
@@ -108,12 +113,12 @@ instance Show Directive where
   show ReportURI = "report-uri"
 
 cachedDirectives :: MonadHandler m => m DirSet
-cachedDirectives = fromMaybe M.empty <$> cacheGet
+cachedDirectives = fromMaybe M.empty <$> Core.cacheGet
 
 -- | Add a directive to the current Content-Security Policy
 addCSP :: MonadWidget m => Directive -> Source -> m ()
 addCSP d s = cachedDirectives
-  >>= cacheSet . M.insertWith insertSource d (S.singleton s)
+  >>= Core.cacheSet . M.insertWith insertSource d (S.singleton s)
 
 insertSource :: Set Source -> Set Source -> Set Source
 insertSource a b = case S.toList a of
@@ -143,10 +148,10 @@ augment (Just (CSPNonce n)) d =
 
 addCSPMiddleware :: (HandlerFor m) a -> (HandlerFor m) a
 addCSPMiddleware handler = do
-  (r, n) <- (,) <$> handler <*> cacheGet
+  (r, n) <- (,) <$> handler <*> Core.cacheGet
   d <- augment n <$> cachedDirectives
   when (not (null (showDirectives d))) $
-    addHeader cspHeaderName (showDirectives d)
+    Core.addHeader cspHeaderName (showDirectives d)
   pure r
 
 -- | Get a nonce for the request
@@ -161,11 +166,11 @@ addCSPMiddleware handler = do
 -- nonce, but @Data.UUID.V4.nextRandom@ just happens to be faster than
 -- @System.Random.randomIO@.
 getRequestNonce :: MonadHandler m => m CSPNonce
-getRequestNonce = cacheGet >>= maybe mkNonce pure
+getRequestNonce = Core.cacheGet >>= maybe mkNonce pure
   where mkNonce = do
           let decode = decodeUtf8 . B64.encode . toASCIIBytes
           nonce <- CSPNonce . decode <$> liftIO nextRandom
-          cacheSet nonce
+          Core.cacheSet nonce
           pure nonce
 
 -- | Add a local JavaScript asset to the widget
@@ -174,17 +179,23 @@ getRequestNonce = cacheGet >>= maybe mkNonce pure
 -- @Yesod.Core.Widget.addScript@. It takes the nonce generated for the current
 -- request and embeds it as an HTML attribute in the script tag.
 addScript :: MonadWidget m => Route (HandlerSite m) -> m ()
-addScript route = do
+addScript route = addScriptAttrs route []
+
+addScriptAttrs :: MonadWidget m => Route (HandlerSite m) -> [(Text, Text)] -> m ()
+addScriptAttrs route attrs = do
   nonce <- getRequestNonce
-  addScriptAttrs route [("nonce", unCSPNonce nonce)]
+  Core.addScriptAttrs route $ ("nonce", unCSPNonce nonce) : attrs
 
 -- | Add a remote JavaScript asset to the widget
 --
 -- The same notes for @addScript@ apply here.
 addScriptRemote :: MonadWidget m => Text -> m ()
-addScriptRemote uri = do
+addScriptRemote uri = addScriptRemoteAttrs uri []
+
+addScriptRemoteAttrs :: MonadWidget m => Text -> [(Text, Text)] -> m ()
+addScriptRemoteAttrs uri attrs = do
   nonce <- getRequestNonce
-  addScriptRemoteAttrs uri [("nonce", unCSPNonce nonce)]
+  Core.addScriptRemoteAttrs uri $ ("nonce", unCSPNonce nonce) : attrs
 
 addScriptEither :: MonadWidget m => Either (Route (HandlerSite m)) Text -> m ()
 addScriptEither = either addScript addScriptRemote
