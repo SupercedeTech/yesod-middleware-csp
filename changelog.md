@@ -2,6 +2,10 @@
 
 This format is based on [Keep A Changelog](https://keepachangelog.com/en/1.0.0).
 
+## 1.1.0 - 2022-07-15
+
++ Add new directive ManifestSrc
+
 ## Unreleased
 
 ## 1.0.2 - 2022-07-12
