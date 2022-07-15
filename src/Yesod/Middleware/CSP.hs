@@ -97,6 +97,7 @@ data Directive
   | FrameAncestors
   | BaseURI
   | ReportURI
+  | ManifestSrc
   deriving (Eq, Ord)
 
 instance Show Directive where
@@ -113,6 +114,7 @@ instance Show Directive where
   show FrameAncestors = "frame-ancestors"
   show BaseURI = "base-uri"
   show ReportURI = "report-uri"
+  show ManifestSrc = "manifest-src"
 
 cachedDirectives :: MonadHandler m => m DirSet
 cachedDirectives = fromMaybe M.empty <$> Core.cacheGet
