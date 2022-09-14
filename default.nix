@@ -1,5 +1,5 @@
 { pkgs ? import ./nix/nixpkgs.nix { }
-, compiler ? "ghc865"
+, compiler ? "ghc902"
 }:
 
 let
