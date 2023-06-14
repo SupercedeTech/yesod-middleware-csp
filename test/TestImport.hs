@@ -12,7 +12,6 @@ import qualified Yesod
 import qualified Yesod.Default.Config2 as C
 
 import ClassyPrelude as X hiding (Handler, delete, deleteBy)
-import Control.Monad (when)
 import Data.CaseInsensitive (CI)
 import ExampleApp as X
 import Network.Wai.Test (SResponse(..))

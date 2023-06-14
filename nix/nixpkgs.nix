@@ -1,8 +1,8 @@
 let
-  owner = "NixOS";
-  repo = "nixpkgs";
-  # https://releases.nixos.org/nixos/19.09/nixos-19.09.1965.274e095f761
-  rev = "274e095f761b2da76a376d105c41591739350b14";
-  url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
+  # release-22.05, committed on 2022.07.04
 in
-  import (builtins.fetchTarball url)
+  import (builtins.fetchGit {
+          url = "https://github.com/NixOS/nixpkgs";
+          rev = "dbb62c34bbb5cdf05f1aeab07638b24b0824d605";
+          ref = "nixos-22.05";
+        })
