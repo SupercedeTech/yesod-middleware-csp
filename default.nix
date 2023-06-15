@@ -1,18 +1,10 @@
-{ pkgs ? import ./nix/nixpkgs.nix { }
-, compiler ? "ghc902"
-}:
-
-let
-  inherit (import ./nix/gitignoreSource.nix { inherit (pkgs) lib; }) gitignoreSource;
-in
-  pkgs.haskell.lib.overrideCabal
-    (pkgs.haskell.packages.${compiler}.callPackage ./yesod-middleware-csp.nix {}) (drv: {
-      src = gitignoreSource ./.;
-      configureFlags = ["-f-library-only"];
-      doHaddock = false;
-      enableLibraryProfiling = false;
-      enableSeparateDataOutput = false;
-      enableSharedExecutables = false;
-      isLibrary = false;
-      postFixup = "rm -rf $out/lib $out/nix-support $out/share/doc";
-    })
+(import
+  (
+    let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in
+    fetchTarball {
+      url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
+      sha256 = lock.nodes.flake-compat.locked.narHash;
+    }
+  )
+  { src = ./.; }
+).defaultNix
