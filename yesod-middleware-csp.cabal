@@ -29,7 +29,7 @@ library
   build-depends:
       base               >=4      && <5
     , base64-bytestring  >=1.0.0  && <1.3
-    , bytestring         >=0.9    && <0.12
+    , bytestring         >=0.9    && <0.13
     , classy-prelude     >=1.5.0  && <1.6
     , conduit            >=1.3.1  && <1.4
     , containers         >=0.6.0  && <0.7
@@ -55,7 +55,7 @@ test-suite spec
   build-depends:
       base
     , base64-bytestring
-    , bytestring            >=0.9    
+    , bytestring            >=0.9
     , case-insensitive
     , classy-prelude        >=0.10.2
     , classy-prelude-yesod  >=1.1
@@ -73,8 +73,8 @@ test-suite spec
     , uuid
     , wai-extra             >=3.0
     , yesod
-    , yesod-core            >=1.6.15 
-    , yesod-static          >=1.6    
+    , yesod-core            >=1.6.15
+    , yesod-static          >=1.6
     , yesod-test
 
   other-modules:
