@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               yesod-middleware-csp
-version:            1.2.0
+version:            1.3.0
 author:             Jezen Thomas <jezen@supercede.com>
 maintainer:         Jezen Thomas <jezen@supercede.com>
 license:            MIT
