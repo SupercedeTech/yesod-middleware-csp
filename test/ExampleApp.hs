@@ -9,7 +9,8 @@
 
 module ExampleApp where
 
-import ClassyPrelude.Yesod hiding (addScript, addScriptRemote)
+import Data.Text (Text)
+import Yesod hiding (addScript, addScriptRemote)
 import Yesod.Core.Types (Logger)
 import Yesod.EmbeddedStatic
 import Yesod.Middleware.CSP
@@ -39,19 +40,19 @@ getExample1 = defaultLayout $ do
   addCSP ScriptSrc Https
   addCSP ScriptSrc StrictDynamic
   addCSP ObjectSrc None
-  toWidget $ asText ""
+  toWidget ("" :: Text)
 
 getExample2 :: Handler Html
 getExample2 = defaultLayout $ do
   addCSP ScriptSrc None
   addCSP ScriptSrc Wildcard
-  toWidget $ asText ""
+  toWidget ("" :: Text)
 
 getExample3 :: Handler Html
 getExample3 = defaultLayout $ do
   addCSP ScriptSrc Wildcard
   addCSP ScriptSrc None
-  toWidget $ asText ""
+  toWidget ("" :: Text)
 
 getExample4 :: Handler Html
 getExample4 = defaultLayout $ do
@@ -59,26 +60,26 @@ getExample4 = defaultLayout $ do
   addCSP ScriptSrc None
   addCSP ScriptSrc DataScheme
   addCSP ScriptSrc Https
-  toWidget $ asText ""
+  toWidget ("" :: Text)
 
 getExample5 :: Handler Html
 getExample5 = defaultLayout $ do
   addScript $ StaticR js_test_js
-  toWidget $ asText ""
+  toWidget ("" :: Text)
 
 getExample6 :: Handler Html
 getExample6 = defaultLayout $ do
   addScriptRemote "https://example.com/test.js"
-  toWidget $ asText ""
+  toWidget ("" :: Text)
 
 getExample7 :: Handler Html
-getExample7 = defaultLayout $ toWidget $ asText ""
+getExample7 = defaultLayout $ toWidget ("" :: Text)
 
 getExample8 :: Handler Html
 getExample8 = defaultLayout $ do
   addScript $ StaticR js_test_js
   addCSP ScriptSrc None
-  toWidget $ asText ""
+  toWidget ("" :: Text)
 
 instance Yesod ExampleApp where
   yesodMiddleware = addCSPMiddleware

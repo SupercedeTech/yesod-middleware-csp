@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -26,13 +25,17 @@ module Yesod.Middleware.CSP
   , getRequestNonce
   ) where
 
-import ClassyPrelude
 import Conduit hiding (Source)
+import Control.Monad (when)
 import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
+import Data.Maybe (fromMaybe)
 import qualified Data.Set as S
+import Data.String (IsString(..))
+import Data.Text (Text, pack, unpack)
 import qualified Data.Text as T
+import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
 import Data.UUID (toASCIIBytes)
@@ -40,14 +43,14 @@ import Data.UUID.V4 (nextRandom)
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax as TH
 import System.Directory
-import System.FilePath (takeDirectory)
+import System.FilePath (takeDirectory, (</>), (<.>))
 import qualified System.FilePath as F
-import Yesod.Core(HandlerSite, MonadWidget, MonadHandler, HandlerFor)
+import Yesod.Core (HandlerSite, MonadWidget, MonadHandler, HandlerFor)
 import qualified Yesod.Core as Core
 import Yesod.Static hiding
        (CombineSettings, combineScripts', combineStylesheets')
 
-type DirSet = Map Directive (Set Source)
+type DirSet = M.Map Directive (S.Set Source)
 
 newtype CSPNonce = CSPNonce { unCSPNonce :: Text } deriving (Eq, Ord)
 
@@ -124,19 +127,19 @@ addCSP :: MonadWidget m => Directive -> Source -> m ()
 addCSP d s = cachedDirectives
   >>= Core.cacheSet . M.insertWith insertSource d (S.singleton s)
 
-insertSource :: Set Source -> Set Source -> Set Source
+insertSource :: S.Set Source -> S.Set Source -> S.Set Source
 insertSource a b = case S.toList a of
   [ None ]     -> a
   _            -> a <> S.filter (`notElem` [None]) b
 
-showSources :: Set Source -> Text
+showSources :: S.Set Source -> Text
 showSources = pack . unwords . map show . S.toList
 
-showDirective :: (Directive, Set Source) -> Text
-showDirective (d, s) = tshow d <> " " <> showSources s
+showDirective :: (Directive, S.Set Source) -> Text
+showDirective (d, s) = pack (show d) <> " " <> showSources s
 
 showDirectives :: DirSet -> Text
-showDirectives = intercalate "; " . map showDirective . M.toList
+showDirectives = T.intercalate "; " . map showDirective . M.toList
 
 cspHeaderName :: Text
 cspHeaderName = "Content-Security-Policy"
@@ -145,7 +148,7 @@ augment :: Maybe CSPNonce -> DirSet -> DirSet
 augment Nothing d = d
 augment (Just (CSPNonce n)) d =
   let srcs = S.fromList [ Nonce n ]
-      existingScriptSrcs = S.toList (fromMaybe S.empty (lookup ScriptSrc d))
+      existingScriptSrcs = S.toList (fromMaybe S.empty (M.lookup ScriptSrc d))
    in if any (`elem` existingScriptSrcs) [ None ]
       then d
       else M.insertWith insertSource ScriptSrc srcs d
@@ -154,8 +157,9 @@ addCSPMiddleware :: (HandlerFor m) a -> (HandlerFor m) a
 addCSPMiddleware handler = do
   (r, n) <- (,) <$> handler <*> Core.cacheGet
   d <- augment n <$> cachedDirectives
-  when (not (null (showDirectives d))) $
-    Core.addHeader cspHeaderName (showDirectives d)
+  let header = showDirectives d
+  when (not (T.null header)) $
+    Core.addHeader cspHeaderName header
   pure r
 
 -- | Get a nonce for the request

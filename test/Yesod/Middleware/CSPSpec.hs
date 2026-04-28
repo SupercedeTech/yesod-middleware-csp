@@ -3,6 +3,7 @@
 module Yesod.Middleware.CSPSpec (spec) where
 
 import Data.Maybe (fromJust)
+import Data.Text.Encoding (encodeUtf8)
 import TestImport
 
 spec :: Spec
